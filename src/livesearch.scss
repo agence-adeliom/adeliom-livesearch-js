@@ -37,9 +37,8 @@ $animation-hover: 250ms;
 }
 
 [js-livesearch-loading]{
-    display: none !important;
-    &.is-visible{
-        display: flex !important;
+    &:not(.is-visible){
+        display: none !important;
     }
     &.animation-out{
         @include fadeOut();
@@ -47,9 +46,8 @@ $animation-hover: 250ms;
 }
 
 [js-livesearch-noresult]{
-    display: none !important;
-    &.is-visible{
-        display: flex !important;
+    &:not(.is-visible){
+        display: none !important;
     }
     &.animation-out{
         @include fadeOut();
