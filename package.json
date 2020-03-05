@@ -2,7 +2,7 @@
     "name": "adeliom-livesearch-js",
     "version": "0.1.0",
     "description": "js livesearch ajax",
-    "main": "index.js",
+    "main": "dist/livesearch.js",
     "scripts": {
         "build": "webpack",
         "build-babel": "babel src -d build"
@@ -22,8 +22,13 @@
         "@babel/plugin-transform-function-name": "^7.8.3",
         "@babel/polyfill": "^7.8.3",
         "@babel/preset-env": "^7.8.4",
+        "autoprefixer": "^9.7.4",
         "babel-loader": "^8.0.6",
+        "css-loader": "^3.4.2",
         "dauphine-js": "https://bitbucket.org/adeliomgit/dauphine-js.git",
+        "node-sass": "^4.13.1",
+        "sass-loader": "^8.0.2",
+        "style-loader": "^1.1.3",
         "terser-webpack-plugin": "^2.3.4",
         "webpack": "^4.41.5",
         "webpack-cli": "^3.3.10"

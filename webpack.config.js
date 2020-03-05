@@ -2,21 +2,34 @@ const webpack = require("webpack");
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 
-const webpack_rules = [];
-
 const webpackOption = {
     mode: "production",
     entry: {
         index: './src/livesearch.js',
     },
     output: {
-        path: path.resolve(__dirname, "dist"),
+        path: path.resolve(__dirname, "./dist"),
         filename: 'livesearch.js',
         library: "Livesearch",
         libraryTarget: "umd"
     },
     module: {
-        rules: webpack_rules
+        rules: [
+            {
+                test: /\.js$/,
+                exclude: /(node_modules|bower_components)/,
+                use: {
+                    loader: "babel-loader",
+                    options: {
+                        presets: ["@babel/preset-env"]
+                    }
+                }
+            },
+            {
+                test: /\.scss$/,
+                loader: ['style-loader', 'css-loader', 'sass-loader']
+            }
+        ]
     },
     optimization: {
         minimize: true,
@@ -44,5 +57,4 @@ let babelLoader = {
     }
 };
 
-webpack_rules.push(babelLoader);
 module.exports = webpackOption;

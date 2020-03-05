@@ -1,0 +1,66 @@
+$animation-hover: 250ms;
+
+%animation {
+    animation-fill-mode: both;
+    animation-timing-function: ease-in;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+@mixin fadeIn($time: $animation-hover){
+    @extend %animation;
+    animation-name: fadeIn;
+    animation-duration: $time;
+}
+
+@mixin fadeOut($time: $animation-hover){
+    @extend %animation;
+    animation-name: fadeOut;
+    animation-duration: $time;
+}
+
+[js-livesearch-loading]{
+    display: none;
+    &.is-visible{
+        display: flex;
+    }
+    &.animation-out{
+        @include fadeOut();
+    }
+}
+
+[js-livesearch-noresult]{
+    display: none;
+    &.is-visible{
+        display: flex;
+    }
+    &.animation-out{
+        @include fadeOut();
+    }
+}
+
+[js-livesearch-results]{
+    &.animation-out{
+        @include fadeOut();
+    }
+    &.animation-in{
+        @include fadeIn();
+    }
+}
