@@ -30,6 +30,7 @@ yarn add https://bitbucket.org/adeliomgit/adeliom-livesearch-js.git
 # Import
 ```
 import Livesearch from 'adeliom-livesearch-js';
+import '~adeliom-livesearch-js/dist/livesearch.css';
 ```
 
 # Available options (by default)
