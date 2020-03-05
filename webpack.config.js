@@ -10,8 +10,8 @@ const webpackOption = {
         index: './src/livesearch.js',
     },
     output: {
-        path: path.resolve(__dirname, "./dist"),
-        filename: '[name].js',
+        path: path.resolve(__dirname, "dist"),
+        filename: 'livesearch.js',
         library: "Livesearch",
         libraryTarget: "umd"
     },
@@ -19,7 +19,7 @@ const webpackOption = {
         rules: webpack_rules
     },
     optimization: {
-        minimize: false,
+        minimize: true,
         minimizer: [new TerserPlugin({
             terserOptions: {
                 keep_classnames: true,
