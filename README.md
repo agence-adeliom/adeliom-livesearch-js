@@ -10,6 +10,21 @@ yarn add https://bitbucket.org/adeliomgit/adeliom-livesearch-js.git
     ...
 </form>
 
+<div js-livesearch-loading>
+    ....
+</div>
+
+<div js-livesearch-results>
+    ...
+</div>
+
+<div js-livesearch-noresult>
+    ...
+</div>
+
+<div js-livesearch-pagination>
+    ...
+</div>
 ```
 
 # Import
