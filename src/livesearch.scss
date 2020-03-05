@@ -39,7 +39,7 @@ $animation-hover: 250ms;
 [js-livesearch-loading]{
     display: none !important;
     &.is-visible{
-        display:  !important;
+        display: flex !important;
     }
     &.animation-out{
         @include fadeOut();
