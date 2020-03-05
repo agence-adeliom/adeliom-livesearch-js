@@ -1,15 +1,16 @@
 const webpack = require("webpack");
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const webpackOption = {
     mode: "production",
     entry: {
-        index: './src/livesearch.js',
+        livesearch: './src/livesearch.js',
     },
     output: {
         path: path.resolve(__dirname, "./dist"),
-        filename: 'livesearch.js',
+        filename: '[name].js',
         library: "Livesearch",
         libraryTarget: "umd"
     },
@@ -27,7 +28,13 @@ const webpackOption = {
             },
             {
                 test: /\.scss$/,
-                loader: ['style-loader', 'css-loader', 'sass-loader']
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader,
+                    },
+                    "css-loader",
+                    "sass-loader"
+                ]
             }
         ]
     },
@@ -43,18 +50,12 @@ const webpackOption = {
             },
             extractComments: false
         })]
-    }
-};
-
-let babelLoader = {
-    test: /\.js$/,
-    exclude: /(node_modules|bower_components)/,
-    use: {
-        loader: "babel-loader",
-        options: {
-            presets: ["@babel/preset-env"]
-        }
-    }
+    },
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename: `/[name].css`
+        }),
+    ]
 };
 
 module.exports = webpackOption;

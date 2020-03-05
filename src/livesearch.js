@@ -1,5 +1,6 @@
 import Emitter from 'dauphine-js/dist/emitter';
 import {$, $$, animate, addEvent, getParams, buildQuery, updateURL, mergeObjects} from "dauphine-js";
+import styles from './livesearch.scss';
 
 export default class Livesearch extends Emitter {
 
