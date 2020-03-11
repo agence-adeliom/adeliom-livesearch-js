@@ -4,20 +4,21 @@ import styles from './livesearch.scss';
 
 export default class Livesearch extends Emitter {
 
-    constructor(settings) {
+    constructor(settings={}) {
 
         super();
 
         this.options = {
             "pathAjax": "",
             "actionAjax": "",
-            "filtersSelector": "[js-livesearch-form]",
+            "formSelector": "[js-livesearch-form]",
             "resultsSelector": "[js-livesearch-results]",
             "loadingSelector": "[js-livesearch-loading]",
             "paginationSelector": "[js-livesearch-pagination]",
             "resetSelector": "[js-livesearch-reset]",
             "noResultSelector": "[js-livesearch-noresult]",
             "pageNumberSelector": "[js-livesearch-page]",
+            "excludeFilterSelector": "[js-livesearch-exclude]",
             "submitSelector": "",
             "perPage": 9,
             "minimumTimeLoading": 1000,
@@ -27,7 +28,7 @@ export default class Livesearch extends Emitter {
 
         this.options = mergeObjects(this.options, settings);
 
-        this.filtersWrapper = null;
+        this.formWrapper = null;
         this.resetWrapper = null;
 
         this.filters = [];
@@ -36,7 +37,7 @@ export default class Livesearch extends Emitter {
 
     init(callback) {
 
-        this.filtersWrapper = $(this.options.filtersSelector);
+        this.formWrapper = $(this.options.formSelector);
         this.resultsWrapper = $(this.options.resultsSelector);
         this.loadingWrapper = $(this.options.loadingSelector);
         this.noResultWrapper = $(this.options.noResultSelector);
@@ -50,13 +51,13 @@ export default class Livesearch extends Emitter {
             throw "Path ajax is required";
         }
 
-        if(!this.filtersWrapper || !this.resultsWrapper || !this.loadingWrapper || !this.noResultWrapper){
+        if(!this.formWrapper || !this.resultsWrapper || !this.loadingWrapper || !this.noResultWrapper){
             throw "A wrapper is missing";
         }
 
         this._activeFilters();
 
-        this.filtersWrapper.onchange = (e) => {
+        this.formWrapper.onchange = (e) => {
             e.preventDefault();
             this._onChange(e);
         };
@@ -84,7 +85,7 @@ export default class Livesearch extends Emitter {
 
             const target = e.target;
 
-            const page = target.getAttribute(this.options.pageNumberSelector.replace('[', '').replace(']', ''));
+            const page = target.getAttribute(this._formatAttributeSelector(this.options.pageNumberSelector));
             let newParams = getParams(window.location);
             newParams.page = page;
 
@@ -117,10 +118,14 @@ export default class Livesearch extends Emitter {
 
     }
 
+    _formatAttributeSelector(selector) {
+        return selector.replace('[', '').replace(']', '');
+    }
+
     _activeFilters() {
         const currentParams = getParams(window.location);
         Object.keys(currentParams).forEach((key) => {
-            const input = this.filtersWrapper.querySelectorAll("[name=" +key+"]");
+            const input = this.formWrapper.querySelectorAll("[name=" +key+"]");
             const values = currentParams[key].split(',');
             this.filters[key] = values;
             input.forEach((el) => {
@@ -145,7 +150,7 @@ export default class Livesearch extends Emitter {
     _onChange(event, inputName, inputValue) {
 
         const target = inputName ? $('[name='+inputName+']') : event.target;
-        if(!target){
+        if(!target || target.hasAttribute(this._formatAttributeSelector(this.options.excludeFilterSelector))){
             return;
         }
 
@@ -333,7 +338,7 @@ export default class Livesearch extends Emitter {
     }
 
     reset() {
-        this.filtersWrapper.reset();
+        this.formWrapper.reset();
         this.filters = [];
         updateURL("");
         this.emit('reset');
