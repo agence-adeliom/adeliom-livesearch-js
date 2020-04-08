@@ -275,21 +275,17 @@ export default class Livesearch extends Emitter {
         xhr.onload = () => {
             if(xhr.status === 200){
                 const results = JSON.parse(xhr.response);
-                if(results.items && results.items.length){
+                const timeEnd = new Date().getTime();
 
-                    const timeEnd = new Date().getTime();
-
-                    if (timeEnd-timeInit < delay) {
-                        setTimeout(() => {
-                            this._showResults(results, params);
-                        }, delay - (timeEnd-timeInit))
-                    } else {
+                if (timeEnd-timeInit < delay) {
+                    setTimeout(() => {
                         this._showResults(results, params);
-                    }
-
+                    }, delay - (timeEnd-timeInit))
+                } else {
+                    this._showResults(results, params);
                 }
-            }
-            else{
+
+            } else {
                 this.emit("error", xhr);
             }
         };
