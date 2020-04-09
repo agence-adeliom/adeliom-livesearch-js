@@ -274,20 +274,18 @@ export default class Livesearch extends Emitter {
 
         xhr.onload = () => {
             if(xhr.status === 200){
+
                 const results = JSON.parse(xhr.response);
-                if(results.items && results.items.length){
 
-                    const timeEnd = new Date().getTime();
-
-                    if (timeEnd-timeInit < delay) {
-                        setTimeout(() => {
-                            this._showResults(results, params);
-                        }, delay - (timeEnd-timeInit))
-                    } else {
+                const timeEnd = new Date().getTime();
+                if (timeEnd-timeInit < delay) {
+                    setTimeout(() => {
                         this._showResults(results, params);
-                    }
-
+                    }, delay - (timeEnd-timeInit))
+                } else {
+                    this._showResults(results, params);
                 }
+                
             }
             else{
                 this.emit("error", xhr);
@@ -317,7 +315,6 @@ export default class Livesearch extends Emitter {
         }
 
         const style = window.getComputedStyle(this.loadingWrapper, null).getPropertyValue('transiton-duration');
-        console.log(style);
 
         animate(this.loadingWrapper, 'animation-out', () => {
             this.loadingWrapper.classList.remove('is-visible');
