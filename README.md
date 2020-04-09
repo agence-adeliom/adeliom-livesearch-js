@@ -81,11 +81,11 @@ livesearch.on('pageChange', (response) => {
 
 # Methods
 ```
-uploadField.reset();
+livesearch.reset();
 
 // you can pass only the event
-uploadField.update(event);
+livesearch.update(event);
 
 // or specify a name and a value
-uploadField.update(null, inputName, inputValue);
+livesearch.update(null, inputName, inputValue);
 ```
