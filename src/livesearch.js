@@ -321,6 +321,7 @@ export default class Livesearch extends Emitter {
 
             if(results.items && results.items.length){
                 this.resultsWrapper.removeAttribute('hidden');
+                this.noResultWrapper.classList.remove('is-visible');
             }
             else{
                 this.noResultWrapper.classList.add('is-visible');
