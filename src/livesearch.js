@@ -1,6 +1,5 @@
 import Emitter from 'dauphine-js/dist/emitter';
 import {$, $$, animate, addEvent, getParams, buildQuery, updateURL, mergeObjects} from "dauphine-js";
-import styles from './livesearch.scss';
 
 export default class Livesearch extends Emitter {
 
@@ -21,15 +20,18 @@ export default class Livesearch extends Emitter {
             "excludeFilterSelector": "[js-livesearch-exclude]",
             "submitSelector": "",
             "perPage": 9,
-            "minimumTimeLoading": 1000,
+            "minimumTimeLoading": 300,
             "paramsInUrl": true,
             "animationScrollTo": "smooth",
+            "animationManually": false
         };
 
         this.options = mergeObjects(this.options, settings);
 
         this.formWrapper = null;
         this.resetWrapper = null;
+
+        this.xhr = null;
 
         this.filters = [];
 
@@ -92,15 +94,26 @@ export default class Livesearch extends Emitter {
             const href = target.getAttribute('href');
             const hash = href.substring(href.indexOf('#'));
             const element = document.getElementById(hash.replace('#', ''));
+
+            let y = null;
+
             if(element){
-                const y = element.getBoundingClientRect().top + window.pageYOffset;
-                window.scrollTo({top: y, behavior: this.options.animationScrollTo});
+                y = element.getBoundingClientRect().top + window.pageYOffset;
+                if(!this.options.animationManually){
+                    if(this.options.animationScrollTo){
+                        window.scrollTo({top: y, behavior: this.options.animationScrollTo});
+                    }
+                    else{
+                        window.scrollTo({top: y});
+                    }
+                }
             }
 
             this.emit('pageChange', {
                 filters: this.filters,
                 params: newParams,
-                hash: hash
+                hash: hash,
+                offset: y
             });
 
             if(this.options.paramsInUrl){
@@ -129,12 +142,13 @@ export default class Livesearch extends Emitter {
             const values = currentParams[key].split(',');
             this.filters[key] = values;
             input.forEach((el) => {
-                if(el.type === "select" || el.type === 'select-multiple'){
-                    el.options.forEach((option) => {
+                if(el.type === "select" || el.type === "select-one" || el.type === 'select-multiple'){
+                    for(let i = 0; i < el.options.length; i++) {
+                        const option = el.options[i];
                         if(values.indexOf(option.value) !== -1){
                             option.defaultSelected = true;
                         }
-                    });
+                    }
                 }
                 if((el.type === 'checkbox' || el.type === 'radio') && values.indexOf(el.value) !== -1) {
                     el.setAttribute('checked', true);
@@ -156,6 +170,10 @@ export default class Livesearch extends Emitter {
 
         const targetName = inputName ? inputName : target.name;
         const value = inputValue ? inputValue : target.type === "select-multiple" ? this._getSelectValues(target) : target.value;
+
+        if(!value){
+            return;
+        }
 
         if(this.filters[targetName] && this.filters[targetName].length){
 
@@ -184,6 +202,11 @@ export default class Livesearch extends Emitter {
             this.filters[targetName] = [];
             this.filters[targetName].push(value);
         }
+
+        this.emit('click', {
+            filters: this.filters,
+            target: target
+        });
 
         if(!this.options.submitSelector){
             this._handleChange();
@@ -219,8 +242,7 @@ export default class Livesearch extends Emitter {
 
         for (var i=0, iLen=options.length; i<iLen; i++) {
             opt = options[i];
-
-            if (opt.selected) {
+            if (opt.selected && !opt.disabled && opt.value && opt.value !== "NONE") {
                 result.push(opt.value || opt.text);
             }
         }
@@ -250,7 +272,7 @@ export default class Livesearch extends Emitter {
         if(this.noResultWrapper.classList.contains('is-visible')){
             animate(this.noResultWrapper, 'animation-out', () => {
                 this.loadingWrapper.classList.add('is-visible');
-            }, false, true);
+            }, true);
         }
         else{
             animate(this.resultsWrapper, 'animation-out', () => {
@@ -263,6 +285,10 @@ export default class Livesearch extends Emitter {
             filters: this.filters
         });
 
+        if(this.xhr){
+            this.xhr.abort();
+        }
+
         const xhr = new XMLHttpRequest();
 
         xhr.open("GET", this.options.pathAjax + '?' + query);
@@ -271,6 +297,8 @@ export default class Livesearch extends Emitter {
 
         const delay = this.options.minimumTimeLoading;
         const timeInit = new Date().getTime();
+
+        this.xhr = xhr;
 
         xhr.onload = () => {
             if(xhr.status === 200){
@@ -281,14 +309,15 @@ export default class Livesearch extends Emitter {
                 if (timeEnd-timeInit < delay) {
                     setTimeout(() => {
                         this._showResults(results, params);
-                    }, delay - (timeEnd-timeInit))
+                    }, delay - (timeEnd-timeInit));
                 } else {
                     this._showResults(results, params);
                 }
-                
+
             }
             else{
                 this.emit("error", xhr);
+                this.xhr = null;
             }
         };
 
@@ -297,6 +326,8 @@ export default class Livesearch extends Emitter {
     }
 
     _showResults(results, params) {
+
+        this.xhr = null;
 
         this.resultsWrapper.innerHTML = "";
 
@@ -324,6 +355,7 @@ export default class Livesearch extends Emitter {
                 this.noResultWrapper.classList.remove('is-visible');
             }
             else{
+                this.noResultWrapper.removeAttribute('hidden');
                 this.noResultWrapper.classList.add('is-visible');
             }
 
@@ -336,11 +368,31 @@ export default class Livesearch extends Emitter {
     }
 
     reset() {
+        this.noResultWrapper.classList.remove('is-visible');
         this.formWrapper.reset();
-        this.filters = [];
-        updateURL("");
-        this.emit('reset');
-        this._getDatas();
+
+        const currentParams = getParams(window.location);
+
+        if(Object.keys(currentParams).length) {
+            Object.keys(currentParams).forEach((key) => {
+                const input = this.formWrapper.querySelectorAll("[name=" +key+"]");
+                input.forEach((el) => {
+                    if(el.type === 'checkbox' || el.type === 'radio'){
+                        el.checked = false;
+                    }
+                    else if(el.type === "select" || el.type === "select-one" || el.type === 'select-multiple'){
+                        el.options.selectedIndex = -1;
+                    }
+                    else{
+                        el.value = "";
+                    }
+                });
+            });
+            this.filters = [];
+            updateURL("");
+            this.emit('reset');
+            this._getDatas();
+        }
     }
 
 }
