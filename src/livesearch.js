@@ -18,15 +18,24 @@ export default class Livesearch extends Emitter {
             "noResultSelector": "[js-livesearch-noresult]",
             "pageNumberSelector": "[js-livesearch-page]",
             "excludeFilterSelector": "[js-livesearch-exclude]",
+            "moreButtonSelector": "[js-livesearch-show-more]",
+            "moreButtonText": "Voir plus",
             "submitSelector": "",
             "perPage": 9,
             "minimumTimeLoading": 300,
             "paramsInUrl": true,
             "animationScrollTo": "smooth",
-            "animationManually": false
+            "animationManually": false,
+            "infiniteScroll": false,
+            "infiniteScrollOffset": 200,
+            "manualInfiniteScroll": false,
         };
 
         this.options = mergeObjects(this.options, settings);
+
+        this.reachedLastItems = false;
+        this.isLoading = false;
+        this.page = 1;
 
         this.formWrapper = null;
         this.resetWrapper = null;
@@ -49,22 +58,37 @@ export default class Livesearch extends Emitter {
         this.submitWrapper = this.options.submitSelector ? $$(this.options.submitSelector) : null;
         this.resetWrapper = this.options.submitSelector ? $$(this.options.resetSelector) : null;
 
-        if(!this.options.pathAjax){
+        if (!this.options.pathAjax) {
             throw "Path ajax is required";
         }
 
-        if(!this.formWrapper || !this.resultsWrapper || !this.loadingWrapper || !this.noResultWrapper){
+        if (!this.formWrapper || !this.resultsWrapper || !this.loadingWrapper || !this.noResultWrapper) {
             throw "A wrapper is missing";
         }
 
         this._activeFilters();
 
+        if (this.options.infiniteScroll || this.options.manualInfiniteScroll) {
+            if (this.options.manualInfiniteScroll) {
+                this._manualInfiniteScroll();
+            } else {
+                this._infiniteScroll();
+            }
+        }
+
         this.formWrapper.onchange = (e) => {
             e.preventDefault();
+
+            this.reachedLastItems = false;
+
+            if (this.options.manualInfiniteScroll) {
+                this._enableManualInfinityScroll();
+            }
+
             this._onChange(e);
         };
 
-        if(this.resetWrapper && this.resetWrapper.length){
+        if (this.resetWrapper && this.resetWrapper.length) {
             this.resetWrapper.forEach((el) => {
                 el.addEventListener('click', () => {
                     this.reset();
@@ -125,7 +149,7 @@ export default class Livesearch extends Emitter {
 
         });
 
-        if(callback && typeof callback === 'function'){
+        if (callback && typeof callback === 'function') {
             callback();
         }
 
@@ -135,22 +159,61 @@ export default class Livesearch extends Emitter {
         return selector.replace('[', '').replace(']', '');
     }
 
+    _infiniteScrollRequest() {
+        if (!this.reachedLastItems && !this.isLoading) {
+            this.isLoading = true;
+            ++this.page;
+            this._handleChange(true);
+        }
+    }
+
+    _infiniteScroll() {
+        const infiniteScrollContainer = $(this.options.resultsSelector);
+
+        if (infiniteScrollContainer) {
+            window.addEventListener('scroll', () => {
+                const windowScrollBottomPosition = window.scrollY + window.innerHeight;
+                const infiniteContainerBottomPosition = infiniteScrollContainer.getBoundingClientRect().bottom + window.scrollY;
+
+                if (windowScrollBottomPosition > (infiniteContainerBottomPosition - this.options.infiniteScrollOffset) && !this.isLoading) {
+                    this._infiniteScrollRequest();
+                }
+            });
+        }
+    }
+
+    _manualInfiniteScroll() {
+        this.options.infiniteScroll = true;
+        const moreButtonContainer = $(this.options.moreButtonSelector);
+
+        if (moreButtonContainer) {
+            const showMoreButton = document.createElement('button');
+            showMoreButton.textContent = this.options.moreButtonText;
+
+            showMoreButton.addEventListener('click', () => {
+                this._infiniteScrollRequest();
+            });
+
+            moreButtonContainer.appendChild(showMoreButton);
+        }
+    }
+
     _activeFilters() {
         const currentParams = getParams(window.location);
         Object.keys(currentParams).forEach((key) => {
-            const input = this.formWrapper.querySelectorAll("[name=" +key+"]");
+            const input = this.formWrapper.querySelectorAll("[name=" + key + "]");
             const values = currentParams[key].split(',');
             this.filters[key] = values;
             input.forEach((el) => {
-                if(el.type === "select" || el.type === "select-one" || el.type === 'select-multiple'){
-                    for(let i = 0; i < el.options.length; i++) {
+                if (el.type === "select" || el.type === "select-one" || el.type === 'select-multiple') {
+                    for (let i = 0; i < el.options.length; i++) {
                         const option = el.options[i];
-                        if(values.indexOf(option.value) !== -1){
+                        if (values.indexOf(option.value) !== -1) {
                             option.defaultSelected = true;
                         }
                     }
                 }
-                if((el.type === 'checkbox' || el.type === 'radio') && values.indexOf(el.value) !== -1) {
+                if ((el.type === 'checkbox' || el.type === 'radio') && values.indexOf(el.value) !== -1) {
                     el.setAttribute('checked', true);
                 }
             });
@@ -214,7 +277,7 @@ export default class Livesearch extends Emitter {
 
     }
 
-    _handleChange() {
+    _handleChange(isInfiniteScroll = false) {
         const newParams = {};
 
         Object.keys(this.filters).forEach((filter) => {
@@ -223,15 +286,15 @@ export default class Livesearch extends Emitter {
 
         const currentParams = getParams(window.location);
 
-        if(currentParams && currentParams.page){
+        if (currentParams && currentParams.page) {
             newParams.page = currentParams.page;
         }
 
         if(this.options.paramsInUrl){
-            this._updateQuery(newParams);
+            this._updateQuery(newParams, isInfiniteScroll);
         }
         else{
-            this._getDatas(newParams);
+            this._getDatas(newParams, isInfiniteScroll);
         }
     }
 
@@ -249,35 +312,52 @@ export default class Livesearch extends Emitter {
         return result;
     }
 
-    _updateQuery(params) {
+    _updateQuery(params, isInfiniteScroll = false) {
         const newQuery = buildQuery(params, false);
         updateURL(newQuery);
-        this._getDatas(params);
+        this._getDatas(params, isInfiniteScroll);
     }
 
-    _getDatas(params={}) {
+    _enableManualInfinityScroll() {
+        const moreButtonContainer = $(this.options.moreButtonSelector);
+        moreButtonContainer.style.display = '';
+    }
+
+    _disableManualInfinityScroll() {
+        const moreButtonContainer = $(this.options.moreButtonSelector);
+        moreButtonContainer.style.display = 'none';
+    }
+
+    _getDatas(params = {}, infiniteScroll = false) {
+
+        this.isLoading = true;
 
         const options = {};
 
-        if(this.options.perPage){
+        if (this.options.perPage) {
             options.perPage = this.options.perPage;
         }
 
-        if(this.options.actionAjax){
+        if (infiniteScroll && this.page) {
+            options.page = this.page;
+        }
+
+        if (this.options.actionAjax) {
             options.action = this.options.actionAjax;
         }
 
         const query = buildQuery(mergeObjects(params, options), false);
 
-        if(this.noResultWrapper.classList.contains('is-visible')){
-            animate(this.noResultWrapper, 'animation-out', () => {
-                this.loadingWrapper.classList.add('is-visible');
-            }, true);
-        }
-        else{
-            animate(this.resultsWrapper, 'animation-out', () => {
-                this.loadingWrapper.classList.add('is-visible');
-            }, true);
+        if (!infiniteScroll) {
+            if (this.noResultWrapper.classList.contains('is-visible')) {
+                animate(this.noResultWrapper, 'animation-out', () => {
+                    this.loadingWrapper.classList.add('is-visible');
+                }, true);
+            } else {
+                animate(this.resultsWrapper, 'animation-out', () => {
+                    this.loadingWrapper.classList.add('is-visible');
+                }, true);
+            }
         }
 
         this.emit('beforeChange', {
@@ -285,7 +365,7 @@ export default class Livesearch extends Emitter {
             filters: this.filters
         });
 
-        if(this.xhr){
+        if (this.xhr) {
             this.xhr.abort();
         }
 
@@ -301,21 +381,30 @@ export default class Livesearch extends Emitter {
         this.xhr = xhr;
 
         xhr.onload = () => {
-            if(xhr.status === 200){
+            if (xhr.status === 200) {
 
                 const results = JSON.parse(xhr.response);
 
-                const timeEnd = new Date().getTime();
-                if (timeEnd-timeInit < delay) {
-                    setTimeout(() => {
-                        this._showResults(results, params);
-                    }, delay - (timeEnd-timeInit));
-                } else {
-                    this._showResults(results, params);
+                if (results.items && results.items.length <= 0) {
+                    this.reachedLastItems = true;
+                    if (this.options.manualInfiniteScroll) {
+                        this._disableManualInfinityScroll();
+                    }
                 }
 
-            }
-            else{
+                const timeEnd = new Date().getTime();
+                if (timeEnd - timeInit < delay) {
+                    setTimeout(() => {
+                        this._showResults(results, params, infiniteScroll);
+                        this.isLoading = false;
+                    }, delay - (timeEnd - timeInit));
+                } else {
+                    this._showResults(results, params, infiniteScroll);
+                    this.isLoading = false;
+                }
+
+            } else {
+                this.isLoading = false;
                 this.emit("error", xhr);
                 this.xhr = null;
             }
@@ -325,46 +414,58 @@ export default class Livesearch extends Emitter {
 
     }
 
-    _showResults(results, params) {
+
+    _showResults(results, params, isInfinite = false) {
 
         this.xhr = null;
 
-        this.resultsWrapper.innerHTML = "";
+        if (!isInfinite) {
+            this.resultsWrapper.innerHTML = "";
+        }
 
-        if(this.paginationWrapper){
+        if (this.paginationWrapper) {
             this.paginationWrapper.innerHTML = "";
         }
 
-        if(results.items && results.items.length){
+        if (results.items && results.items.length) {
             results.items.forEach((item) => {
                 this.resultsWrapper.innerHTML += item;
             });
         }
 
-        if(results.pagination){
+        if (results.pagination) {
             this.paginationWrapper.innerHTML = results.pagination;
         }
 
         const style = window.getComputedStyle(this.loadingWrapper, null).getPropertyValue('transiton-duration');
 
-        animate(this.loadingWrapper, 'animation-out', () => {
-            this.loadingWrapper.classList.remove('is-visible');
+        if (!isInfinite) {
+            animate(this.loadingWrapper, 'animation-out', () => {
+                if (!isInfinite) {
+                    this.loadingWrapper.classList.remove('is-visible');
 
-            if(results.items && results.items.length){
-                this.resultsWrapper.removeAttribute('hidden');
-                this.noResultWrapper.classList.remove('is-visible');
-            }
-            else{
-                this.noResultWrapper.removeAttribute('hidden');
-                this.noResultWrapper.classList.add('is-visible');
-            }
+                    if (results.items && results.items.length) {
+                        this.resultsWrapper.removeAttribute('hidden');
+                        this.noResultWrapper.classList.remove('is-visible');
+                    } else {
+                        this.noResultWrapper.removeAttribute('hidden');
+                        this.noResultWrapper.classList.add('is-visible');
+                    }
+                }
 
+                this.emit("afterChange", {
+                    results: results,
+                    params: params,
+                    filters: this.filters
+                });
+            }, false, true);
+        } else {
             this.emit("afterChange", {
                 results: results,
                 params: params,
                 filters: this.filters
             });
-        }, false, true);
+        }
     }
 
     reset() {
