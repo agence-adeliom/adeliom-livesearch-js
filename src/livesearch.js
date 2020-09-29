@@ -284,12 +284,6 @@ export default class Livesearch extends Emitter {
             newParams[filter] = this.filters[filter];
         });
 
-        const currentParams = getParams(window.location);
-
-        if (currentParams && currentParams.page) {
-            newParams.page = currentParams.page;
-        }
-
         if(this.options.paramsInUrl){
             this._updateQuery(newParams, isInfiniteScroll);
         }
