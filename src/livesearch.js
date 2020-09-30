@@ -230,6 +230,8 @@ export default class Livesearch extends Emitter {
 
     _onChange(event, inputName, inputValue) {
 
+        this.page = 1;
+
         const target = inputName ? $('[name='+inputName+']') : event.target;
         if(!target || target.hasAttribute(this._formatAttributeSelector(this.options.excludeFilterSelector))){
             return;
