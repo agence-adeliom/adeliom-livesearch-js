@@ -76,6 +76,10 @@ export default class Livesearch extends Emitter {
             }
         }
 
+        this.formWrapper.addEventListener("submit", (e) => {
+            e.preventDefault();
+        });
+
         this.formWrapper.onchange = (e) => {
             e.preventDefault();
 
@@ -233,10 +237,6 @@ export default class Livesearch extends Emitter {
 
         const targetName = inputName ? inputName : target.name;
         const value = inputValue ? inputValue : target.type === "select-multiple" ? this._getSelectValues(target) : target.value;
-
-        if(!value){
-            return;
-        }
 
         if(this.filters[targetName] && this.filters[targetName].length){
 
