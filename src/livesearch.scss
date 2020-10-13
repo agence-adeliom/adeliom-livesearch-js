@@ -36,7 +36,8 @@ $animation-hover: 250ms;
     animation-duration: $time;
 }
 
-[js-livesearch-loading]{
+[js-livesearch-loading],
+[js-livesearch-infinite-scroll-loading]{
     &:not(.is-visible){
         display: none !important;
     }

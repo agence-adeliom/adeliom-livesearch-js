@@ -13,6 +13,7 @@ export default class Livesearch extends Emitter {
             "formSelector": "[js-livesearch-form]",
             "resultsSelector": "[js-livesearch-results]",
             "loadingSelector": "[js-livesearch-loading]",
+            "infiniteScrollLoadingSelector": "[js-livesearch-infinite-scroll-loading]",
             "paginationSelector": "[js-livesearch-pagination]",
             "resetSelector": "[js-livesearch-reset]",
             "noResultSelector": "[js-livesearch-noresult]",
@@ -69,6 +70,8 @@ export default class Livesearch extends Emitter {
         this._activeFilters();
 
         if (this.options.infiniteScroll || this.options.manualInfiniteScroll) {
+            this.infiniteScrollLoadingWrapper = $(this.options.infiniteScrollLoadingSelector);
+
             if (this.options.manualInfiniteScroll) {
                 this._manualInfiniteScroll();
             } else {
@@ -354,11 +357,16 @@ export default class Livesearch extends Emitter {
                     this.loadingWrapper.classList.add('is-visible');
                 }, true);
             }
+        } else {
+            if(this.infiniteScrollLoadingWrapper) {
+                this.infiniteScrollLoadingWrapper.classList.add('is-visible');
+            }
         }
 
         this.emit('beforeChange', {
             params: params,
-            filters: this.filters
+            filters: this.filters,
+            isInfiniteRequest: infiniteScroll,
         });
 
         if (this.xhr) {
@@ -452,14 +460,22 @@ export default class Livesearch extends Emitter {
                 this.emit("afterChange", {
                     results: results,
                     params: params,
-                    filters: this.filters
+                    filters: this.filters,
+                    isInfiniteRequest: isInfinite,
                 });
             }, false, true);
         } else {
+            if(this.infiniteScrollLoadingWrapper) {
+                animate(this.infiniteScrollLoadingWrapper, 'animation-out', () => {
+                    this.infiniteScrollLoadingWrapper.classList.remove('is-visible');
+                }, false, true)
+            }
+
             this.emit("afterChange", {
                 results: results,
                 params: params,
-                filters: this.filters
+                filters: this.filters,
+                isInfiniteRequest: isInfinite,
             });
         }
     }
