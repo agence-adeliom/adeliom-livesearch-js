@@ -336,6 +336,14 @@ export default class Livesearch extends Emitter {
         moreButtonContainer.style.display = 'none';
     }
 
+    _displayLoadingWrapper(params) {
+        this.loadingWrapper.classList.add('is-visible');
+        this.emit('isLoading', {
+            params: params,
+            filters: this.filters
+        });
+    }
+
     _getDatas(params = {}, infiniteScroll = false) {
 
         this.isLoading = true;
@@ -359,11 +367,11 @@ export default class Livesearch extends Emitter {
         if (!infiniteScroll) {
             if (this.noResultWrapper.classList.contains('is-visible')) {
                 animate(this.noResultWrapper, 'animation-out', () => {
-                    this.loadingWrapper.classList.add('is-visible');
+                    this._displayLoadingWrapper(params);
                 }, true);
             } else {
                 animate(this.resultsWrapper, 'animation-out', () => {
-                    this.loadingWrapper.classList.add('is-visible');
+                    this._displayLoadingWrapper(params);
                 }, true);
             }
         } else {
