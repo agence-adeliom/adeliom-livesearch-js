@@ -379,7 +379,7 @@ export default class Livesearch extends Emitter {
 
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-        const delay = this.options.minimumTimeLoading;
+        const delay = infiniteScroll ? 0 : this.options.minimumTimeLoading;
         const timeInit = new Date().getTime();
 
         this.xhr = xhr;
