@@ -29,11 +29,13 @@ export default class Livesearch extends Emitter {
             "animationManually": false,
             "infiniteScroll": false,
             "infiniteScrollOffset": 200,
+            "infiniteScrollPreloadedAttribute": "js-livesearch-preloaded",
             "manualInfiniteScroll": false,
         };
 
         this.options = mergeObjects(this.options, settings);
 
+        this.isOriginalQuery = true;
         this.reachedLastItems = false;
         this.isLoading = false;
         this.page = 1;
@@ -85,8 +87,6 @@ export default class Livesearch extends Emitter {
 
         this.formWrapper.onchange = (e) => {
             e.preventDefault();
-
-            this.reachedLastItems = false;
 
             if (this.options.manualInfiniteScroll) {
                 this._enableManualInfinityScroll();
@@ -167,6 +167,12 @@ export default class Livesearch extends Emitter {
     }
 
     _infiniteScrollRequest() {
+        if(this.isOriginalQuery) {
+            if(this.resultsWrapper.getAttribute(this.options.infiniteScrollPreloadedAttribute) && this.resultsWrapper.getAttribute(this.options.infiniteScrollPreloadedAttribute) < this.options.perPage) {
+                return;
+            }
+        }
+
         if (!this.reachedLastItems && !this.isLoading) {
             this.isLoading = true;
             ++this.page;
@@ -232,6 +238,9 @@ export default class Livesearch extends Emitter {
     }
 
     _onChange(event, inputName, inputValue) {
+
+        this.isOriginalQuery = false;
+        this.reachedLastItems = false;
 
         this.page = 1;
 
@@ -389,7 +398,7 @@ export default class Livesearch extends Emitter {
 
                 const results = JSON.parse(xhr.response);
 
-                if (results.items && results.items.length <= 0) {
+                if (results.items && results.items.length < this.options.perPage) {
                     this.reachedLastItems = true;
                     if (this.options.manualInfiniteScroll) {
                         this._disableManualInfinityScroll();
@@ -449,6 +458,14 @@ export default class Livesearch extends Emitter {
                     this.loadingWrapper.classList.remove('is-visible');
 
                     if (results.items && results.items.length) {
+                        this.resultsWrapper.removeAttribute('hidden');
+                        this.noResultWrapper.classList.remove('is-visible');
+                    } else {
+                        this.noResultWrapper.removeAttribute('hidden');
+                        this.noResultWrapper.classList.add('is-visible');
+                    }
+                } else {
+                    if(this.page !== 1 && results.items && results.items.length) {
                         this.resultsWrapper.removeAttribute('hidden');
                         this.noResultWrapper.classList.remove('is-visible');
                     } else {
