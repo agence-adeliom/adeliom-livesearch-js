@@ -63,7 +63,7 @@ export default class Livesearch extends Emitter {
         this.paginationWrapper = this.options.paginationSelector ? $(this.options.paginationSelector) : null;
 
         this.submitWrapper = this.options.submitSelector ? $$(this.options.submitSelector) : null;
-        this.resetWrapper = this.options.submitSelector ? $$(this.options.resetSelector) : null;
+        this.resetWrapper = this.options.resetSelector ? $$(this.options.resetSelector) : null;
 
         if (!this.options.pathAjax) {
             throw "Path ajax is required";
