@@ -241,15 +241,18 @@ export default class Livesearch extends Emitter {
                 if ((el.type === 'checkbox' || el.type === 'radio') && values.indexOf(el.value) !== -1) {
                     el.setAttribute('checked', true);
                 }
+                if(el.type === 'text') {
+                    el.value = currentParams[key];
+                }
             });
         });
     }
 
     update(event, name, value){
-        this._onChange(event, name, value);
+        this._onChange(event, name, value, true);
     }
 
-    _onChange(event, inputName, inputValue) {
+    _onChange(event, inputName, inputValue, manualUpdate = false) {
 
         this.isOriginalQuery = false;
         this.reachedLastItems = false;
@@ -257,7 +260,7 @@ export default class Livesearch extends Emitter {
         this.page = 1;
 
         const target = inputName ? $('[name='+inputName+']') : event.target;
-        if(!target || target.hasAttribute(this._formatAttributeSelector(this.options.excludeFilterSelector))){
+        if((!target || target.hasAttribute(this._formatAttributeSelector(this.options.excludeFilterSelector)) && !manualUpdate)){
             return;
         }
 
