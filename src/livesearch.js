@@ -12,6 +12,7 @@ export default class Livesearch extends Emitter {
             "actionAjax": "",
             "formSelector": "[js-livesearch-form]",
             "resultsSelector": "[js-livesearch-results]",
+            "resultsItemsSelector": "[js-livesearch-items]",
             "loadingSelector": "[js-livesearch-loading]",
             "infiniteScrollLoadingSelector": "[js-livesearch-infinite-scroll-loading]",
             "paginationSelector": "[js-livesearch-pagination]",
@@ -55,6 +56,9 @@ export default class Livesearch extends Emitter {
         this.resultsWrapper = $(this.options.resultsSelector);
         this.loadingWrapper = $(this.options.loadingSelector);
         this.noResultWrapper = $(this.options.noResultSelector);
+        this.resultsItemsWrapper = $(this.options.resultsItemsSelector);
+
+        this._checkResultsCount();
 
         this.paginationWrapper = this.options.paginationSelector ? $(this.options.paginationSelector) : null;
 
@@ -160,6 +164,14 @@ export default class Livesearch extends Emitter {
             callback();
         }
 
+    }
+
+    _checkResultsCount() {
+        const children = this.resultsItemsWrapper ? this.resultsItemsWrapper.children : this.resultsWrapper.children;
+
+        if(children.length === 0) {
+            this._displayNoResultWrapper();
+        }
     }
 
     _formatAttributeSelector(selector) {
@@ -344,6 +356,16 @@ export default class Livesearch extends Emitter {
         });
     }
 
+    _displayNoResultWrapper() {
+        this.noResultWrapper.removeAttribute('hidden');
+        this.noResultWrapper.classList.add('is-visible');
+    }
+
+    _hideNoResultWrapper() {
+        this.resultsWrapper.removeAttribute('hidden');
+        this.noResultWrapper.classList.remove('is-visible');
+    }
+
     _getDatas(params = {}, infiniteScroll = false) {
 
         this.isLoading = true;
@@ -466,19 +488,15 @@ export default class Livesearch extends Emitter {
                     this.loadingWrapper.classList.remove('is-visible');
 
                     if (results.items && results.items.length) {
-                        this.resultsWrapper.removeAttribute('hidden');
-                        this.noResultWrapper.classList.remove('is-visible');
+                        this._hideNoResultWrapper();
                     } else {
-                        this.noResultWrapper.removeAttribute('hidden');
-                        this.noResultWrapper.classList.add('is-visible');
+                        this._displayNoResultWrapper();
                     }
                 } else {
                     if(this.page !== 1 && results.items && results.items.length) {
-                        this.resultsWrapper.removeAttribute('hidden');
-                        this.noResultWrapper.classList.remove('is-visible');
+                        this._hideNoResultWrapper();
                     } else {
-                        this.noResultWrapper.removeAttribute('hidden');
-                        this.noResultWrapper.classList.add('is-visible');
+                        this._displayNoResultWrapper();
                     }
                 }
 
