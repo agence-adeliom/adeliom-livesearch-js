@@ -438,7 +438,9 @@ export default class Livesearch extends Emitter {
                     }
                 } else {
                     this.reachedLastItems = false;
-                    this._enableManualInfinityScroll()
+                    if (this.options.manualInfiniteScroll) {
+                        this._enableManualInfinityScroll()
+                    }
                 }
 
                 const timeEnd = new Date().getTime();
