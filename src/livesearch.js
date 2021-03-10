@@ -411,9 +411,7 @@ export default class Livesearch extends Emitter {
             isInfiniteRequest: infiniteScroll,
         });
 
-        if (this.xhr) {
-            this.xhr.abort();
-        }
+        this.cancelRequest();
 
         const xhr = new XMLHttpRequest();
 
@@ -527,6 +525,15 @@ export default class Livesearch extends Emitter {
                 params: params,
                 filters: this.filters,
                 isInfiniteRequest: isInfinite,
+            });
+        }
+    }
+
+    cancelRequest() {
+        if (this.xhr) {
+            this.xhr.abort();
+            this.emit("cancelRequest", {
+                filters: this.filters
             });
         }
     }
