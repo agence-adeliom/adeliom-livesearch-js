@@ -81,9 +81,13 @@ livesearch.on('pageChange', (response) => {
 
 # Methods
 ```
+// Reset the form
 livesearch.reset();
 
-// you can pass only the event
+// Cancel a request
+livesearch.cancelRequest();
+
+// Manual update, you can pass only the event
 livesearch.update(event);
 
 // or specify a name and a value
