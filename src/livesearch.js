@@ -226,7 +226,7 @@ export default class Livesearch extends Emitter {
     _activeFilters() {
         const currentParams = getParams(window.location);
         Object.keys(currentParams).forEach((key) => {
-            const input = this.formWrapper.querySelectorAll("[name=" + key + "]");
+            const input = this.formWrapper.querySelectorAll('[name="' + key + '"]');
             const values = currentParams[key].split(',');
             this.filters[key] = values;
             input.forEach((el) => {
@@ -546,15 +546,13 @@ export default class Livesearch extends Emitter {
 
         if(Object.keys(currentParams).length) {
             Object.keys(currentParams).forEach((key) => {
-                const input = this.formWrapper.querySelectorAll('[name="' +key+'"]');
+                const input = this.formWrapper.querySelectorAll('[name="' + key + '"]');
                 input.forEach((el) => {
-                    if(el.type === 'checkbox' || el.type === 'radio'){
+                    if (el.type === 'checkbox' || el.type === 'radio') {
                         el.checked = false;
-                    }
-                    else if(el.type === "select" || el.type === "select-one" || el.type === 'select-multiple'){
+                    } else if (el.type === "select" || el.type === "select-one" || el.type === 'select-multiple') {
                         el.options.selectedIndex = -1;
-                    }
-                    else{
+                    } else {
                         el.value = "";
                     }
                 });
