@@ -546,7 +546,7 @@ export default class Livesearch extends Emitter {
 
         if(Object.keys(currentParams).length) {
             Object.keys(currentParams).forEach((key) => {
-                const input = this.formWrapper.querySelectorAll("[name=" +key+"]");
+                const input = this.formWrapper.querySelectorAll('[name="' +key+'"]');
                 input.forEach((el) => {
                     if(el.type === 'checkbox' || el.type === 'radio'){
                         el.checked = false;
