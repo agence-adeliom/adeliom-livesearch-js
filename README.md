@@ -1,6 +1,6 @@
 # Install
 ```
-yarn add https://bitbucket.org/adeliomgit/adeliom-livesearch-js.git
+yarn add https://github.com/agence-adeliom/adeliom-livesearch-js
 ```
 
 # HTML
