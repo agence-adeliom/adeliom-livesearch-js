@@ -39,7 +39,7 @@ import '~adeliom-livesearch-js/dist/livesearch.css';
 const settings = {
     "pathAjax": "",
     "actionAjax": "",
-    "filtersSelector": "[js-livesearch-form]",
+    "formSelector": "[js-livesearch-form]",
     "resultsSelector": "[js-livesearch-results]",
     "loadingSelector": "[js-livesearch-loading]",
     "paginationSelector": "[js-livesearch-pagination]",
