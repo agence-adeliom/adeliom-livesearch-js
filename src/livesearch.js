@@ -22,6 +22,7 @@ export default class Livesearch extends Emitter {
             "excludeFilterSelector": "[js-livesearch-exclude]",
             "moreButtonSelector": "[js-livesearch-show-more]",
             "moreButtonText": "Voir plus",
+            "moreButtonClasses": ["btn"],
             "submitSelector": "",
             "perPage": 9,
             "minimumTimeLoading": 300,
@@ -214,6 +215,10 @@ export default class Livesearch extends Emitter {
         if (moreButtonContainer) {
             const showMoreButton = document.createElement('button');
             showMoreButton.textContent = this.options.moreButtonText;
+
+            this.options.moreButtonClasses.forEach(className => {
+                showMoreButton.classList.add(className);
+            });
 
             showMoreButton.addEventListener('click', () => {
                 this._infiniteScrollRequest();
