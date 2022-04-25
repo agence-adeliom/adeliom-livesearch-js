@@ -349,11 +349,13 @@ export default class Livesearch extends Emitter {
     _enableManualInfinityScroll() {
         const moreButtonContainer = $(this.options.moreButtonSelector);
         moreButtonContainer.style.display = '';
+        moreButtonContainer.removeAttribute('hidden');
     }
 
     _disableManualInfinityScroll() {
         const moreButtonContainer = $(this.options.moreButtonSelector);
         moreButtonContainer.style.display = 'none';
+        moreButtonContainer.setAttribute('hidden', '');
     }
 
     _displayLoadingWrapper(params) {
