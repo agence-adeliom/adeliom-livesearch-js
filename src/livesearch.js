@@ -3,7 +3,7 @@ import {$, $$, animate, addEvent, getParams, buildQuery, updateURL, mergeObjects
 
 export default class Livesearch extends Emitter {
 
-    constructor(settings={}) {
+    constructor(settings = {}) {
 
         super();
 
@@ -108,7 +108,7 @@ export default class Livesearch extends Emitter {
             });
         }
 
-        if(this.submitWrapper && this.submitWrapper.length){
+        if (this.submitWrapper && this.submitWrapper.length) {
             this.submitWrapper.forEach((el) => {
                 el.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -133,13 +133,12 @@ export default class Livesearch extends Emitter {
 
             let y = null;
 
-            if(element){
+            if (element) {
                 y = element.getBoundingClientRect().top + window.pageYOffset;
-                if(!this.options.animationManually){
-                    if(this.options.animationScrollTo){
+                if (!this.options.animationManually) {
+                    if (this.options.animationScrollTo) {
                         window.scrollTo({top: y, behavior: this.options.animationScrollTo});
-                    }
-                    else{
+                    } else {
                         window.scrollTo({top: y});
                     }
                 }
@@ -152,10 +151,9 @@ export default class Livesearch extends Emitter {
                 offset: y
             });
 
-            if(this.options.paramsInUrl){
+            if (this.options.paramsInUrl) {
                 this._updateQuery(newParams);
-            }
-            else{
+            } else {
                 this._getDatas(newParams);
             }
 
@@ -170,7 +168,7 @@ export default class Livesearch extends Emitter {
     _checkResultsCount() {
         const children = this.resultsItemsWrapper ? this.resultsItemsWrapper.children : this.resultsWrapper.children;
 
-        if(children.length === 0) {
+        if (children.length === 0) {
             this._displayNoResultWrapper();
         }
     }
@@ -180,8 +178,8 @@ export default class Livesearch extends Emitter {
     }
 
     _infiniteScrollRequest() {
-        if(this.isOriginalQuery) {
-            if(this.resultsWrapper.getAttribute(this.options.infiniteScrollPreloadedAttribute) && this.resultsWrapper.getAttribute(this.options.infiniteScrollPreloadedAttribute) < this.options.perPage) {
+        if (this.isOriginalQuery) {
+            if (this.resultsWrapper.getAttribute(this.options.infiniteScrollPreloadedAttribute) && this.resultsWrapper.getAttribute(this.options.infiniteScrollPreloadedAttribute) < this.options.perPage) {
                 return;
             }
         }
@@ -246,14 +244,14 @@ export default class Livesearch extends Emitter {
                 if ((el.type === 'checkbox' || el.type === 'radio') && values.indexOf(el.value) !== -1) {
                     el.setAttribute('checked', true);
                 }
-                if(el.type === 'text') {
+                if (el.type === 'text') {
                     el.value = currentParams[key];
                 }
             });
         });
     }
 
-    update(event, name, value){
+    update(event, name, value) {
         this._onChange(event, name, value, true);
     }
 
@@ -264,38 +262,35 @@ export default class Livesearch extends Emitter {
 
         this.page = 1;
 
-        const target = inputName ? $('[name='+inputName+']') : event.target;
-        if((!target || target.hasAttribute(this._formatAttributeSelector(this.options.excludeFilterSelector)) && !manualUpdate)){
+        const target = inputName ? $('[name=' + inputName + ']') : event.target;
+        if ((!target || target.hasAttribute(this._formatAttributeSelector(this.options.excludeFilterSelector)) && !manualUpdate)) {
             return;
         }
 
         const targetName = inputName ? inputName : target.name;
         const value = inputValue ? inputValue : target.type === "select-multiple" ? this._getSelectValues(target) : target.value;
 
-        if(this.filters[targetName] && this.filters[targetName].length){
+        if (this.filters[targetName] && this.filters[targetName].length) {
 
-            if(target.type === 'checkbox'){
+            if (target.type === 'checkbox') {
 
                 const index = this.filters[targetName].indexOf(value);
 
-                if(index !== -1){
+                if (index !== -1) {
                     this.filters[targetName].splice(index, 1);
-                }
-                else{
+                } else {
                     this.filters[targetName].push(value);
                 }
 
-            }
-            else{
+            } else {
                 this.filters[targetName] = value;
             }
 
-            if(!this.filters[targetName].length){
+            if (!this.filters[targetName].length) {
                 delete this.filters[targetName];
             }
 
-        }
-        else{
+        } else {
             this.filters[targetName] = [];
             this.filters[targetName].push(value);
         }
@@ -305,7 +300,7 @@ export default class Livesearch extends Emitter {
             target: target
         });
 
-        if(!this.options.submitSelector){
+        if (!this.options.submitSelector) {
             this._handleChange();
         }
 
@@ -318,10 +313,9 @@ export default class Livesearch extends Emitter {
             newParams[filter] = this.filters[filter];
         });
 
-        if(this.options.paramsInUrl){
+        if (this.options.paramsInUrl) {
             this._updateQuery(newParams, isInfiniteScroll);
-        }
-        else{
+        } else {
             this._getDatas(newParams, isInfiniteScroll);
         }
     }
@@ -331,7 +325,7 @@ export default class Livesearch extends Emitter {
         var options = select && select.options;
         var opt;
 
-        for (var i=0, iLen=options.length; i<iLen; i++) {
+        for (var i = 0, iLen = options.length; i < iLen; i++) {
             opt = options[i];
             if (opt.selected && !opt.disabled && opt.value && opt.value !== "NONE") {
                 result.push(opt.value || opt.text);
@@ -360,6 +354,7 @@ export default class Livesearch extends Emitter {
 
     _displayLoadingWrapper(params) {
         this.loadingWrapper.classList.add('is-visible');
+        this.loadingWrapper.removeAttribute('hidden');
         this.emit('isLoading', {
             params: params,
             filters: this.filters
@@ -408,8 +403,9 @@ export default class Livesearch extends Emitter {
                 }, true);
             }
         } else {
-            if(this.infiniteScrollLoadingWrapper) {
+            if (this.infiniteScrollLoadingWrapper) {
                 this.infiniteScrollLoadingWrapper.classList.add('is-visible');
+                this.infiniteScrollLoadingWrapper.removeAttribute('hidden');
             }
         }
 
@@ -500,6 +496,7 @@ export default class Livesearch extends Emitter {
             animate(this.loadingWrapper, 'animation-out', () => {
                 if (!isInfinite) {
                     this.loadingWrapper.classList.remove('is-visible');
+                    this.loadingWrapper.setAttribute('hidden', '');
 
                     if (results.items && results.items.length) {
                         this._hideNoResultWrapper();
@@ -507,7 +504,7 @@ export default class Livesearch extends Emitter {
                         this._displayNoResultWrapper();
                     }
                 } else {
-                    if(this.page !== 1 && results.items && results.items.length) {
+                    if (this.page !== 1 && results.items && results.items.length) {
                         this._hideNoResultWrapper();
                     } else {
                         this._displayNoResultWrapper();
@@ -522,9 +519,10 @@ export default class Livesearch extends Emitter {
                 });
             }, false, true);
         } else {
-            if(this.infiniteScrollLoadingWrapper) {
+            if (this.infiniteScrollLoadingWrapper) {
                 animate(this.infiniteScrollLoadingWrapper, 'animation-out', () => {
                     this.infiniteScrollLoadingWrapper.classList.remove('is-visible');
+                    this.infiniteScrollLoadingWrapper.setAttribute('hidden', '');
                 }, false, true)
             }
 
@@ -552,7 +550,7 @@ export default class Livesearch extends Emitter {
 
         const currentParams = getParams(window.location);
 
-        if(Object.keys(currentParams).length) {
+        if (Object.keys(currentParams).length) {
             Object.keys(currentParams).forEach((key) => {
                 const input = this.formWrapper.querySelectorAll('[name="' + key + '"]');
                 input.forEach((el) => {
