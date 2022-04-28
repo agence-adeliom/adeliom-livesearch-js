@@ -1,6 +1,10 @@
 import Emitter from 'dauphine-js/dist/emitter';
 import {$, $$, animate, addEvent, getParams, buildQuery, updateURL, mergeObjects} from "dauphine-js";
 
+const beforeChangeEventName = 'beforeChange';
+const afterChangeEventName = 'afterChange';
+const pageChangeEventName = 'pageChange';
+
 export default class Livesearch extends Emitter {
 
     constructor(settings = {}) {
@@ -144,7 +148,7 @@ export default class Livesearch extends Emitter {
                 }
             }
 
-            this.emit('pageChange', {
+            this.emit(pageChangeEventName, {
                 filters: this.filters,
                 params: newParams,
                 hash: hash,
@@ -177,7 +181,7 @@ export default class Livesearch extends Emitter {
         return selector.replace('[', '').replace(']', '');
     }
 
-    _infiniteScrollRequest() {
+    _infiniteScrollRequest(isMoreButton = false) {
         if (this.isOriginalQuery) {
             if (this.resultsWrapper.getAttribute(this.options.infiniteScrollPreloadedAttribute) && this.resultsWrapper.getAttribute(this.options.infiniteScrollPreloadedAttribute) < this.options.perPage) {
                 return;
@@ -187,7 +191,7 @@ export default class Livesearch extends Emitter {
         if (!this.reachedLastItems && !this.isLoading) {
             this.isLoading = true;
             ++this.page;
-            this._handleChange(true);
+            this._handleChange(true, isMoreButton);
         }
     }
 
@@ -219,7 +223,7 @@ export default class Livesearch extends Emitter {
             });
 
             showMoreButton.addEventListener('click', () => {
-                this._infiniteScrollRequest();
+                this._infiniteScrollRequest(true);
             });
 
             moreButtonContainer.appendChild(showMoreButton);
@@ -306,7 +310,7 @@ export default class Livesearch extends Emitter {
 
     }
 
-    _handleChange(isInfiniteScroll = false) {
+    _handleChange(isInfiniteScroll = false, isMoreButton = false) {
         const newParams = {};
 
         Object.keys(this.filters).forEach((filter) => {
@@ -314,9 +318,9 @@ export default class Livesearch extends Emitter {
         });
 
         if (this.options.paramsInUrl) {
-            this._updateQuery(newParams, isInfiniteScroll);
+            this._updateQuery(newParams, isInfiniteScroll, isMoreButton);
         } else {
-            this._getDatas(newParams, isInfiniteScroll);
+            this._getDatas(newParams, isInfiniteScroll, isMoreButton);
         }
     }
 
@@ -334,10 +338,10 @@ export default class Livesearch extends Emitter {
         return result;
     }
 
-    _updateQuery(params, isInfiniteScroll = false) {
+    _updateQuery(params, isInfiniteScroll = false, isMoreButton = false) {
         const newQuery = buildQuery(params, false);
         updateURL(newQuery);
-        this._getDatas(params, isInfiniteScroll);
+        this._getDatas(params, isInfiniteScroll, isMoreButton);
     }
 
     _enableManualInfinityScroll() {
@@ -355,10 +359,27 @@ export default class Livesearch extends Emitter {
     _displayLoadingWrapper(params) {
         this.loadingWrapper.classList.add('is-visible');
         this.loadingWrapper.removeAttribute('hidden');
+        this.resultsWrapper.setAttribute('hidden', '');
         this.emit('isLoading', {
             params: params,
             filters: this.filters
         });
+    }
+
+    _displayInfiniteScrollLoadingWrapper() {
+        if (this.infiniteScrollLoadingWrapper) {
+            this.infiniteScrollLoadingWrapper.classList.add('is-visible');
+            this.infiniteScrollLoadingWrapper.removeAttribute('hidden');
+        }
+    }
+
+    _hideInfiniteScrollLoadingWrapper() {
+        if (this.infiniteScrollLoadingWrapper) {
+            animate(this.infiniteScrollLoadingWrapper, 'animation-out', () => {
+                this.infiniteScrollLoadingWrapper.classList.remove('is-visible');
+                this.infiniteScrollLoadingWrapper.setAttribute('hidden', '');
+            }, false, true)
+        }
     }
 
     _displayNoResultWrapper() {
@@ -372,7 +393,7 @@ export default class Livesearch extends Emitter {
         this.noResultWrapper.classList.remove('is-visible');
     }
 
-    _getDatas(params = {}, infiniteScroll = false) {
+    _getDatas(params = {}, infiniteScroll = false, isMoreButton = false) {
 
         this.isLoading = true;
 
@@ -403,17 +424,22 @@ export default class Livesearch extends Emitter {
                 }, true);
             }
         } else {
-            if (this.infiniteScrollLoadingWrapper) {
-                this.infiniteScrollLoadingWrapper.classList.add('is-visible');
-                this.infiniteScrollLoadingWrapper.removeAttribute('hidden');
-            }
+            this._displayInfiniteScrollLoadingWrapper();
         }
 
-        this.emit('beforeChange', {
-            params: params,
-            filters: this.filters,
-            isInfiniteRequest: infiniteScroll,
-        });
+        if (!isMoreButton) {
+            this.emit(beforeChangeEventName, {
+                params: params,
+                filters: this.filters,
+                isInfiniteRequest: infiniteScroll,
+            });
+        } else {
+            this.emit(pageChangeEventName, {
+                params: params,
+                filters: this.filters,
+                isInfiniteRequest: infiniteScroll,
+            });
+        }
 
         this.cancelRequest();
 
@@ -511,7 +537,7 @@ export default class Livesearch extends Emitter {
                     }
                 }
 
-                this.emit("afterChange", {
+                this.emit(afterChangeEventName, {
                     results: results,
                     params: params,
                     filters: this.filters,
@@ -519,14 +545,9 @@ export default class Livesearch extends Emitter {
                 });
             }, false, true);
         } else {
-            if (this.infiniteScrollLoadingWrapper) {
-                animate(this.infiniteScrollLoadingWrapper, 'animation-out', () => {
-                    this.infiniteScrollLoadingWrapper.classList.remove('is-visible');
-                    this.infiniteScrollLoadingWrapper.setAttribute('hidden', '');
-                }, false, true)
-            }
+            this._hideInfiniteScrollLoadingWrapper();
 
-            this.emit("afterChange", {
+            this.emit(afterChangeEventName, {
                 results: results,
                 params: params,
                 filters: this.filters,
