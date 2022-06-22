@@ -565,30 +565,57 @@ export default class Livesearch extends Emitter {
         }
     }
 
-    reset() {
+    reset(excludes = []) {
         this.noResultWrapper.classList.remove('is-visible');
-        this.formWrapper.reset();
+
+        if (excludes.length === 0) {
+            this.formWrapper.reset();
+        }
 
         const currentParams = getParams(window.location);
+        const newFilters = [];
 
         if (Object.keys(currentParams).length) {
             Object.keys(currentParams).forEach((key) => {
+                const isNotExcluded = !excludes.includes(key);
+
                 const input = this.formWrapper.querySelectorAll('[name="' + key + '"]');
+
                 input.forEach((el) => {
                     if (el.type === 'checkbox' || el.type === 'radio') {
-                        el.checked = false;
+                        if (isNotExcluded) {
+                            el.checked = false;
+                        } else {
+                            newFilters[key] = el.checked;
+                        }
                     } else if (el.type === "select" || el.type === "select-one" || el.type === 'select-multiple') {
-                        el.options.selectedIndex = -1;
+                        if (isNotExcluded) {
+                            el.options.selectedIndex = -1;
+                        } else {
+                            newFilters[key] = el.value;
+                        }
                     } else {
-                        el.value = "";
+                        if (isNotExcluded) {
+                            el.value = "";
+                        } else {
+                            newFilters[key] = el.value;
+                        }
                     }
                 });
+
             });
-            this.filters = [];
-            updateURL("");
-            this.emit('reset');
-            this._getDatas();
+
+            if (excludes.length > 0) {
+                this.filters = newFilters;
+                updateURL(buildQuery(newFilters, true));
+                this.emit('reset');
+                this._getDatas(newFilters);
+            } else {
+                this.filters = [];
+                updateURL("");
+                this.emit('reset');
+                this._getDatas();
+            }
         }
     }
-
 }
