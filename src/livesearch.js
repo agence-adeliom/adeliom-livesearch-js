@@ -25,6 +25,7 @@ export default class Livesearch extends Emitter {
             "pageNumberSelector": "[js-livesearch-page]",
             "excludeFilterSelector": "[js-livesearch-exclude]",
             "moreButtonSelector": "[js-livesearch-show-more]",
+            "pageKey": "page",
             "moreButtonText": "Voir plus",
             "moreButtonClasses": ["btn"],
             "submitSelector": "",
@@ -128,8 +129,9 @@ export default class Livesearch extends Emitter {
             const target = e.target;
 
             const page = target.getAttribute(this._formatAttributeSelector(this.options.pageNumberSelector));
+
             let newParams = getParams(window.location);
-            newParams.page = page;
+            newParams[this.options.pageKey] = page;
 
             const href = target.getAttribute('href');
             const hash = href.substring(href.indexOf('#'));
