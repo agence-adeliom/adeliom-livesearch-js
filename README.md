@@ -51,6 +51,7 @@ const settings = {
     "minimumTimeLoading": 1000,
     "paramsInUrl": true,
     "animationScrollTo": "smooth",
+    "pageKey": "page",
 }
 ```
 
