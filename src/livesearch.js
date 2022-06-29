@@ -177,6 +177,7 @@ export default class Livesearch extends Emitter {
 
         if (children.length === 0) {
             this._displayNoResultWrapper();
+            this._hideResultsWrapper();
         }
     }
 
@@ -362,11 +363,18 @@ export default class Livesearch extends Emitter {
     _displayLoadingWrapper(params) {
         this.loadingWrapper.classList.add('is-visible');
         this.loadingWrapper.removeAttribute('hidden');
-        this.resultsWrapper.setAttribute('hidden', '');
+
+        this._hideResultsWrapper();
+
         this.emit('isLoading', {
             params: params,
             filters: this.filters
         });
+    }
+
+    _hideLoadingWrapper() {
+        this.loadingWrapper.classList.remove('is-visible');
+        this.loadingWrapper.setAttribute('hidden', '');
     }
 
     _displayInfiniteScrollLoadingWrapper() {
@@ -399,7 +407,16 @@ export default class Livesearch extends Emitter {
     _hideNoResultWrapper() {
         this.noResultWrapper.setAttribute('hidden', '');
         this.noResultWrapper.classList.remove('is-visible');
+    }
+
+    _displayResultsWrapper() {
         this.resultsWrapper.removeAttribute('hidden');
+        this.resultsWrapper.classList.add('is-visible');
+    }
+
+    _hideResultsWrapper() {
+        this.resultsWrapper.setAttribute('hidden', '');
+        this.resultsWrapper.classList.remove('is-visible');
     }
 
     _getDatas(params = {}, infiniteScroll = false, isMoreButton = false) {
@@ -540,18 +557,21 @@ export default class Livesearch extends Emitter {
         if (!isInfinite) {
             const callback = () => {
                 if (!isInfinite) {
-                    this.loadingWrapper.classList.remove('is-visible');
-                    this.loadingWrapper.setAttribute('hidden', '');
+                    this._hideLoadingWrapper();
 
                     if (results.items && results.items.length) {
                         this._hideNoResultWrapper();
+                        this._displayResultsWrapper();
                     } else {
+                        this._hideResultsWrapper();
                         this._displayNoResultWrapper();
                     }
                 } else {
                     if (this.page !== 1 && results.items && results.items.length) {
                         this._hideNoResultWrapper();
+                        this._displayResultsWrapper();
                     } else {
+                        this._hideResultsWrapper();
                         this._displayNoResultWrapper();
                     }
                 }
