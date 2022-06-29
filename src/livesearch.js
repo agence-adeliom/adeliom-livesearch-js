@@ -311,7 +311,6 @@ export default class Livesearch extends Emitter {
         if (!this.options.submitSelector) {
             this._handleChange();
         }
-
     }
 
     _handleChange(isInfiniteScroll = false, isMoreButton = false) {
