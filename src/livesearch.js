@@ -38,6 +38,7 @@ export default class Livesearch extends Emitter {
             "infiniteScrollOffset": 200,
             "infiniteScrollPreloadedAttribute": "js-livesearch-preloaded",
             "manualInfiniteScroll": false,
+            "useAnimate": true,
         };
 
         this.options = mergeObjects(this.options, settings);
@@ -377,10 +378,16 @@ export default class Livesearch extends Emitter {
 
     _hideInfiniteScrollLoadingWrapper() {
         if (this.infiniteScrollLoadingWrapper) {
-            animate(this.infiniteScrollLoadingWrapper, 'animation-out', () => {
+            const callback = () => {
                 this.infiniteScrollLoadingWrapper.classList.remove('is-visible');
                 this.infiniteScrollLoadingWrapper.setAttribute('hidden', '');
-            }, false, true)
+            };
+
+            if (this.options.useAnimate) {
+                animate(this.infiniteScrollLoadingWrapper, 'animation-out', callback(), false, true);
+            } else {
+                callback();
+            }
         }
     }
 
@@ -390,9 +397,9 @@ export default class Livesearch extends Emitter {
     }
 
     _hideNoResultWrapper() {
-        this.resultsWrapper.removeAttribute('hidden');
         this.noResultWrapper.setAttribute('hidden', '');
         this.noResultWrapper.classList.remove('is-visible');
+        this.resultsWrapper.removeAttribute('hidden');
     }
 
     _getDatas(params = {}, infiniteScroll = false, isMoreButton = false) {
@@ -417,13 +424,25 @@ export default class Livesearch extends Emitter {
 
         if (!infiniteScroll) {
             if (this.noResultWrapper.classList.contains('is-visible')) {
-                animate(this.noResultWrapper, 'animation-out', () => {
+                const callback = () => {
                     this._displayLoadingWrapper(params);
-                }, true);
+                };
+
+                if (this.options.useAnimate) {
+                    animate(this.noResultWrapper, 'animation-out', callback(), true);
+                } else {
+                    callback();
+                }
             } else {
-                animate(this.resultsWrapper, 'animation-out', () => {
+                const callback = () => {
                     this._displayLoadingWrapper(params);
-                }, true);
+                };
+
+                if (this.options.useAnimate) {
+                    animate(this.resultsWrapper, 'animation-out', callback(), true);
+                } else {
+                    callback();
+                }
             }
         } else {
             this._displayInfiniteScrollLoadingWrapper();
@@ -518,10 +537,8 @@ export default class Livesearch extends Emitter {
             this.paginationWrapper.innerHTML = results.pagination;
         }
 
-        const style = window.getComputedStyle(this.loadingWrapper, null).getPropertyValue('transiton-duration');
-
         if (!isInfinite) {
-            animate(this.loadingWrapper, 'animation-out', () => {
+            const callback = () => {
                 if (!isInfinite) {
                     this.loadingWrapper.classList.remove('is-visible');
                     this.loadingWrapper.setAttribute('hidden', '');
@@ -545,7 +562,13 @@ export default class Livesearch extends Emitter {
                     filters: this.filters,
                     isInfiniteRequest: isInfinite,
                 });
-            }, false, true);
+            };
+
+            if (this.options.useAnimate) {
+                animate(this.loadingWrapper, 'animation-out', callback(), false, true);
+            } else {
+                callback();
+            }
         } else {
             this._hideInfiniteScrollLoadingWrapper();
 
