@@ -73,11 +73,23 @@ export default class Livesearch extends Emitter {
         this.resetWrapper = this.options.resetSelector ? $$(this.options.resetSelector) : null;
 
         if (!this.options.pathAjax) {
-            throw "Path ajax is required";
+            throw "Path ajax option (pathAjax) is required";
         }
 
-        if (!this.formWrapper || !this.resultsWrapper || !this.loadingWrapper || !this.noResultWrapper) {
-            throw "A wrapper is missing";
+        if (!this.formWrapper) {
+            throw "Form wrapper (" + this.options.formSelector + ") is missing";
+        }
+
+        if (!this.resultsWrapper) {
+            throw "Results wrapper (" + this.options.resultsSelector + ") is missing";
+        }
+
+        if (!this.loadingWrapper) {
+            throw "Loading wrapper (" + this.options.loadingSelector + ") is missing";
+        }
+
+        if (!this.noResultWrapper) {
+            throw "No result wrapper (" + this.options.noResultSelector + ") is missing";
         }
 
         this._activeFilters();
@@ -391,7 +403,7 @@ export default class Livesearch extends Emitter {
             };
 
             if (this.options.useAnimate) {
-                animate(this.infiniteScrollLoadingWrapper, 'animation-out', callback(), false, true);
+                animate(this.infiniteScrollLoadingWrapper, 'animation-out', callback, false, true);
             } else {
                 callback();
             }
@@ -439,27 +451,19 @@ export default class Livesearch extends Emitter {
         const query = buildQuery(mergeObjects(params, options), false);
 
         if (!infiniteScroll) {
-            if (this.noResultWrapper.classList.contains('is-visible')) {
-                const callback = () => {
-                    this._displayLoadingWrapper(params);
-                };
 
-                if (this.options.useAnimate) {
-                    animate(this.noResultWrapper, 'animation-out', callback(), true);
-                } else {
-                    callback();
-                }
+            const wrapper = this.noResultWrapper.classList.contains('is-visible') ? this.noResultWrapper : this.resultsWrapper;
+
+            const callback = () => {
+                this._displayLoadingWrapper(params);
+            };
+
+            if (this.options.useAnimate) {
+                animate(wrapper, 'animation-out', callback, true);
             } else {
-                const callback = () => {
-                    this._displayLoadingWrapper(params);
-                };
-
-                if (this.options.useAnimate) {
-                    animate(this.resultsWrapper, 'animation-out', callback(), true);
-                } else {
-                    callback();
-                }
+                callback();
             }
+
         } else {
             this._displayInfiniteScrollLoadingWrapper();
         }
@@ -584,7 +588,7 @@ export default class Livesearch extends Emitter {
             };
 
             if (this.options.useAnimate) {
-                animate(this.loadingWrapper, 'animation-out', callback(), false, true);
+                animate(this.loadingWrapper, 'animation-out', callback, false, true);
             } else {
                 callback();
             }
