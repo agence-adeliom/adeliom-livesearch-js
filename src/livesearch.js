@@ -275,14 +275,36 @@ export default class Livesearch extends Emitter {
         this._onChange(event, name, value, true);
     }
 
-    _onChange(event, inputName, inputValue, manualUpdate = false) {
+    remove(names) {
+        let excludes = [];
+
+        if (typeof names === 'string') {
+            excludes = [names];
+        } else if (Array.isArray(names)) {
+            excludes = names;
+        }
+
+        this._onChange(null, null, null, true, excludes)
+    }
+
+    _onChange(event, inputName, inputValue, manualUpdate = false, excludes = []) {
+
+        if (excludes.length > 0) {
+            excludes.forEach(exclude => {
+                if (this.filters[exclude]) {
+                    delete this.filters[exclude];
+                }
+            });
+
+            this._handleChange();
+        }
 
         this.isOriginalQuery = false;
         this.reachedLastItems = false;
 
         this.page = 1;
 
-        const target = inputName ? $('[name=' + inputName + ']') : event.target;
+        const target = inputName ? $('[name=' + inputName + ']') : event?.target;
         if ((!target || target.hasAttribute(this._formatAttributeSelector(this.options.excludeFilterSelector)) && !manualUpdate)) {
             return;
         }

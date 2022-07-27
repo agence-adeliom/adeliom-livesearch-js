@@ -93,4 +93,7 @@ livesearch.update(event);
 
 // or specify a name and a value
 livesearch.update(null, inputName, inputValue);
+
+// Remove one or multiple elements from the request
+livesearch.remove(inputName|[inputNames]);
 ```
