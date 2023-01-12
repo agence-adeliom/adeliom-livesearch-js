@@ -463,7 +463,7 @@ export default class Livesearch extends Emitter {
         }
 
         if (infiniteScroll && this.page) {
-            options.page = this.page;
+            options[this.options.pageKey] = this.page;
         }
 
         if (this.options.actionAjax) {
