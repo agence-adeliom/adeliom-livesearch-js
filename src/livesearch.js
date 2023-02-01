@@ -39,6 +39,8 @@ export default class Livesearch extends Emitter {
             "infiniteScrollPreloadedAttribute": "js-livesearch-preloaded",
             "manualInfiniteScroll": false,
             "useAnimate": true,
+            "valuesSeparator": ",",
+            "handleArraysNatively": false,
         };
 
         this.options = mergeObjects(this.options, settings);
@@ -143,7 +145,7 @@ export default class Livesearch extends Emitter {
 
             const page = target.getAttribute(this._formatAttributeSelector(this.options.pageNumberSelector));
 
-            let newParams = getParams(window.location);
+            let newParams = getParams(window.location, this.options.handleArraysNatively);
             newParams[this.options.pageKey] = page;
 
             const href = target.getAttribute('href');
@@ -247,27 +249,39 @@ export default class Livesearch extends Emitter {
     }
 
     _activeFilters() {
-        const currentParams = getParams(window.location);
+        const currentParams = getParams(window.location, this.options.handleArraysNatively);
         Object.keys(currentParams).forEach((key) => {
-            const input = this.formWrapper.querySelectorAll('[name="' + key + '"]');
-            const values = currentParams[key].split(',');
-            this.filters[key] = values;
-            input.forEach((el) => {
-                if (el.type === "select" || el.type === "select-one" || el.type === 'select-multiple') {
-                    for (let i = 0; i < el.options.length; i++) {
-                        const option = el.options[i];
-                        if (values.indexOf(option.value) !== -1) {
-                            option.defaultSelected = true;
+
+            if (key === this.options.pageKey) {
+                this.page = parseInt(currentParams[key]);
+            }else {
+                const input = this.formWrapper.querySelectorAll('[name="' + key + '"]');
+                let values;
+
+                if (Array.isArray(currentParams[key])) {
+                    values = currentParams[key];
+                } else {
+                    values = currentParams[key].split(this.options.valuesSeparator);
+                }
+
+                this.filters[key] = values;
+                input.forEach((el) => {
+                    if (el.type === "select" || el.type === "select-one" || el.type === 'select-multiple') {
+                        for (let i = 0; i < el.options.length; i++) {
+                            const option = el.options[i];
+                            if (values.indexOf(option.value) !== -1) {
+                                option.defaultSelected = true;
+                            }
                         }
                     }
-                }
-                if ((el.type === 'checkbox' || el.type === 'radio') && values.indexOf(el.value) !== -1) {
-                    el.setAttribute('checked', true);
-                }
-                if (el.type === 'text') {
-                    el.value = currentParams[key];
-                }
-            });
+                    if ((el.type === 'checkbox' || el.type === 'radio') && values.indexOf(el.value) !== -1) {
+                        el.setAttribute('checked', true);
+                    }
+                    if (el.type === 'text') {
+                        el.value = currentParams[key];
+                    }
+                });
+            }
         });
     }
 
@@ -376,7 +390,7 @@ export default class Livesearch extends Emitter {
     }
 
     _updateQuery(params, isInfiniteScroll = false, isMoreButton = false) {
-        const newQuery = buildQuery(params, false);
+        const newQuery = buildQuery(params, false, this.options.handleArraysNatively);
         updateURL(newQuery);
         this._getDatas(params, isInfiniteScroll, isMoreButton);
     }
@@ -470,7 +484,7 @@ export default class Livesearch extends Emitter {
             options.action = this.options.actionAjax;
         }
 
-        const query = buildQuery(mergeObjects(params, options), false);
+        const query = buildQuery(mergeObjects(params, options), false, this.options.handleArraysNatively);
 
         if (!infiniteScroll) {
 
@@ -635,6 +649,10 @@ export default class Livesearch extends Emitter {
         }
     }
 
+    getCurrentParams() {
+        return getParams(window.location, this.options.handleArraysNatively);
+    }
+
     reset(excludes = []) {
         this.noResultWrapper.classList.remove('is-visible');
 
@@ -642,7 +660,7 @@ export default class Livesearch extends Emitter {
             this.formWrapper.reset();
         }
 
-        const currentParams = getParams(window.location);
+        const currentParams = getParams(window.location, this.options.handleArraysNatively);
         const newFilters = [];
 
         if (Object.keys(currentParams).length) {
@@ -677,7 +695,7 @@ export default class Livesearch extends Emitter {
 
             if (excludes.length > 0) {
                 this.filters = newFilters;
-                updateURL(buildQuery(newFilters, true));
+                updateURL(buildQuery(newFilters, true, this.options.handleArraysNatively));
                 this.emit('reset');
                 this._getDatas(newFilters);
             } else {

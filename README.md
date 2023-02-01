@@ -52,8 +52,13 @@ const settings = {
     "paramsInUrl": true,
     "animationScrollTo": "smooth",
     "pageKey": "page",
+    "valuesSeparator": ",",
+    "handleArraysNatively": false,
 }
 ```
+
+* `valuesSeparator` : permet de définir le séparateur de valeur dans le cas où les tableaux ne sont pas gérés nativement.
+* `handleArraysNatively` : permet de gérer les tableaux nativement, c'est-à-dire sans séparateur. Le nom des champs doivent se terminer par `[]`.
 
 # Init Class
 
