@@ -137,45 +137,57 @@ export default class Livesearch extends Emitter {
             });
         }
 
-        addEvent('click', this.options.pageNumberSelector, (e) => {
+        const fullSelector = this.options.pageNumberSelector + ', ' + this.options.pageNumberSelector + ' *';
+
+        addEvent('click', fullSelector, (e) => {
 
             e.preventDefault();
 
             const target = e.target;
 
-            const page = target.getAttribute(this._formatAttributeSelector(this.options.pageNumberSelector));
+            let eltWithAttribute;
 
-            let newParams = getParams(window.location, this.options.handleArraysNatively);
-            newParams[this.options.pageKey] = page;
-
-            const href = target.getAttribute('href');
-            const hash = href.substring(href.indexOf('#'));
-            const element = document.getElementById(hash.replace('#', ''));
-
-            let y = null;
-
-            if (element) {
-                y = element.getBoundingClientRect().top + window.pageYOffset;
-                if (!this.options.animationManually) {
-                    if (this.options.animationScrollTo) {
-                        window.scrollTo({top: y, behavior: this.options.animationScrollTo});
-                    } else {
-                        window.scrollTo({top: y});
-                    }
-                }
+            if (target.hasAttribute(this._formatAttributeSelector(this.options.pageNumberSelector))) {
+                eltWithAttribute = target;
+            } else {
+                eltWithAttribute = target.closest(this.options.pageNumberSelector);
             }
 
-            this.emit(pageChangeEventName, {
-                filters: this.filters,
-                params: newParams,
-                hash: hash,
-                offset: y
-            });
+            if (eltWithAttribute) {
+                const page = eltWithAttribute.getAttribute(this._formatAttributeSelector(this.options.pageNumberSelector));
 
-            if (this.options.paramsInUrl) {
-                this._updateQuery(newParams);
-            } else {
-                this._getDatas(newParams);
+                let newParams = getParams(window.location, this.options.handleArraysNatively);
+                newParams[this.options.pageKey] = page;
+
+                const href = eltWithAttribute.getAttribute('href');
+                const hash = href.substring(href.indexOf('#'));
+                const element = document.getElementById(hash.replace('#', ''));
+
+                let y = null;
+
+                if (element) {
+                    y = element.getBoundingClientRect().top + window.pageYOffset;
+                    if (!this.options.animationManually) {
+                        if (this.options.animationScrollTo) {
+                            window.scrollTo({top: y, behavior: this.options.animationScrollTo});
+                        } else {
+                            window.scrollTo({top: y});
+                        }
+                    }
+                }
+
+                this.emit(pageChangeEventName, {
+                    filters: this.filters,
+                    params: newParams,
+                    hash: hash,
+                    offset: y
+                });
+
+                if (this.options.paramsInUrl) {
+                    this._updateQuery(newParams);
+                } else {
+                    this._getDatas(newParams);
+                }
             }
 
         });
@@ -254,7 +266,7 @@ export default class Livesearch extends Emitter {
 
             if (key === this.options.pageKey) {
                 this.page = parseInt(currentParams[key]);
-            }else {
+            } else {
                 const input = this.formWrapper.querySelectorAll('[name="' + key + '"]');
                 let values;
 
