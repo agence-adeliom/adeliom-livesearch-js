@@ -23,6 +23,7 @@ export default class Livesearch extends Emitter {
             "resetSelector": "[js-livesearch-reset]",
             "noResultSelector": "[js-livesearch-noresult]",
             "pageNumberSelector": "[js-livesearch-page]",
+            "displayFirstPageInUrl": true,
             "excludeFilterSelector": "[js-livesearch-exclude]",
             "moreButtonSelector": "[js-livesearch-show-more]",
             "pageKey": "page",
@@ -158,6 +159,11 @@ export default class Livesearch extends Emitter {
 
                 let newParams = getParams(window.location, this.options.handleArraysNatively);
                 newParams[this.options.pageKey] = page;
+
+                if(!this.options['displayFirstPageInUrl'] && page == 1){
+                    // Remove key this.options['pageKey'] from newParams
+                    delete newParams[this.options.pageKey];
+                }
 
                 const href = eltWithAttribute.getAttribute('href');
                 const hash = href.substring(href.indexOf('#'));

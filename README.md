@@ -54,6 +54,7 @@ const settings = {
     "pageKey": "page",
     "valuesSeparator": ",",
     "handleArraysNatively": false,
+    "displayFirstPageInUrl": true,
 }
 ```
 
