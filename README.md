@@ -1,6 +1,7 @@
 # Install
+
 ```
-yarn add https://github.com/agence-adeliom/adeliom-livesearch-js
+npm install git@github.com:agence-adeliom/adeliom-livesearch-js.git
 ```
 
 # HTML
@@ -28,6 +29,7 @@ yarn add https://github.com/agence-adeliom/adeliom-livesearch-js
 ```
 
 # Import
+
 ```
 import Livesearch from 'adeliom-livesearch-js';
 import '~adeliom-livesearch-js/dist/livesearch.css';
@@ -69,6 +71,7 @@ livesearch.init();
 ```
 
 # Listener
+
 ```
 // before ajax call
 livesearch.on('beforeChange', (response) => {
@@ -87,6 +90,7 @@ livesearch.on('pageChange', (response) => {
 ```
 
 # Methods
+
 ```
 // Reset the form
 livesearch.reset();
@@ -102,4 +106,24 @@ livesearch.update(null, inputName, inputValue);
 
 // Remove one or multiple elements from the request
 livesearch.remove(inputName|[inputNames]);
+```
+
+# Development usage
+
+## Start container
+
+```bash
+ddev start
+```
+
+## Install assets
+
+```bash
+ddev install
+```
+
+## Build assets
+
+```bash
+ddev build
 ```
