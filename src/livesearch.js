@@ -336,7 +336,7 @@ export default class Livesearch extends Emitter {
 
         this.page = 1;
 
-        const target = inputName ? $('[name=' + inputName + ']') : event?.target;
+        const target = inputName ? $('[name="' + inputName + '"]') : event?.target;
         if ((!target || target.hasAttribute(this._formatAttributeSelector(this.options.excludeFilterSelector)) && !manualUpdate)) {
             return;
         }
