@@ -69,6 +69,7 @@ const settings = {
     "useAnimate": true,
     "valuesSeparator": ",",
     "handleArraysNatively": false,
+    "forcedParams": {},
 }
 ```
 

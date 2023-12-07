@@ -42,6 +42,7 @@ export default class Livesearch extends Emitter {
             "useAnimate": true,
             "valuesSeparator": ",",
             "handleArraysNatively": false,
+            "forcedParams": {},
         };
 
         this.options = mergeObjects(this.options, settings);
@@ -160,7 +161,7 @@ export default class Livesearch extends Emitter {
                 let newParams = getParams(window.location, this.options.handleArraysNatively);
                 newParams[this.options.pageKey] = page;
 
-                if(!this.options['displayFirstPageInUrl'] && page == 1){
+                if (!this.options['displayFirstPageInUrl'] && page == 1) {
                     // Remove key this.options['pageKey'] from newParams
                     delete newParams[this.options.pageKey];
                 }
@@ -502,7 +503,7 @@ export default class Livesearch extends Emitter {
             options.action = this.options.actionAjax;
         }
 
-        const query = buildQuery(mergeObjects(params, options), false, this.options.handleArraysNatively);
+        const query = buildQuery(mergeObjects(params, options, this.options.forcedParams), false, this.options.handleArraysNatively);
 
         if (!infiniteScroll) {
 
